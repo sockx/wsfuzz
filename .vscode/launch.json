@@ -11,7 +11,9 @@
             "mode": "auto",
             "program": "main.go",
             "args": [
-                "test"
+                "fuzz",
+                "-f",
+                "req.txt"
             ]
         }
     ]
