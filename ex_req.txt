@@ -1,0 +1,15 @@
+GET /message/getMsgCount?userId={CG} HTTP/1.1
+
+Host: 10.1.1.34:18901
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,zh-TW;q=0.7
+Cache-Control: no-cache
+Connection: Upgrade
+Origin: https://10.1.1.34:8902
+Pragma: no-cache
+Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+Sec-WebSocket-Key: kV+W+KmiJ0fWpa190GabgA==
+Sec-WebSocket-Version: 13
+Upgrade: websocket
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36
+
