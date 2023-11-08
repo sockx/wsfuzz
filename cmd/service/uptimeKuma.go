@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"wsfuzz/internal/conf"
 	"wsfuzz/internal/core"
 
 	"github.com/spf13/cobra"
@@ -23,7 +24,6 @@ type LoginForm struct {
 }
 
 var uri string
-var enableDebug bool
 
 var serviceUptimeKumaCmd = &cobra.Command{
 	Use:   "uptimeKuma",
@@ -35,7 +35,7 @@ var serviceUptimeKumaCmd = &cobra.Command{
 		}
 
 		ws := core.DefaultWebSocket()
-		ws.Debug = enableDebug
+		ws.Debug = conf.Options.Debug
 		ws.ParseUri(uri)
 		err := ws.Connect()
 		if err != nil {
@@ -77,20 +77,6 @@ var serviceUptimeKumaCmd = &cobra.Command{
 				break
 			}
 
-			if bytes.HasPrefix(bdata, []byte("0{")) {
-				ws.WriteMessage(1, []byte("40"))
-			}
-
-			if bytes.HasPrefix(bdata, []byte("42[")) {
-				run()
-				continue
-			}
-
-			if bytes.Equal(bdata, []byte("2")) {
-				ws.WriteMessage(1, []byte("3"))
-				continue
-			}
-
 			if bytes.Contains(bdata, []byte(`[{"ok":`)) {
 				login := []*LoginInfo{}
 				json.Unmarshal(bdata[3:], &login)
@@ -103,11 +89,24 @@ var serviceUptimeKumaCmd = &cobra.Command{
 				run()
 				continue
 			}
+
+			if bytes.Equal(bdata, []byte("2")) {
+				ws.WriteMessage(1, []byte("3"))
+				continue
+			}
+
+			if bytes.HasPrefix(bdata, []byte("0{")) {
+				ws.WriteMessage(1, []byte("40"))
+			}
+
+			if bytes.HasPrefix(bdata, []byte("42[")) {
+				run()
+				continue
+			}
 		}
 	},
 }
 
 func init() {
 	serviceUptimeKumaCmd.Flags().StringVarP(&uri, "uri", "u", "", "ws uri")
-	serviceUptimeKumaCmd.Flags().BoolVarP(&enableDebug, "debug", "d", false, "enable debug")
 }

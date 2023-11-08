@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"fmt"
+	"log"
 	"os"
+	"strings"
 
+	"wsfuzz/internal/conf"
 	"wsfuzz/internal/core"
 
 	"github.com/ivanpirog/coloredcobra"
@@ -34,6 +38,8 @@ var localFile string
 
 func init() {
 	RootCmd.SetHelpCommand(&cobra.Command{Hidden: true})
+	RootCmd.PersistentFlags().BoolVarP(&conf.Options.Debug, "debug", "d", false, "enable debug")
+
 	RootCmd.AddCommand(testCmd)
 
 	testCmd.Flags().StringVarP(&localFile, "file", "f", "req.txt", "HTTP请求保存所在文件")
@@ -43,14 +49,30 @@ var testCmd = &cobra.Command{
 	Use:   "fuzz",
 	Short: "Run fuzz",
 	Run: func(cmd *cobra.Command, args []string) {
-		// 读文件
-		req := core.ParseFile(localFile)
-		if req == nil {
-			return
-		}
+		ws := core.DefaultWebSocket()
+		ws.ParseFile(localFile)
+		ws.Url.Scheme = "wss"
+		thisuri := *ws.Url
 
 		for i := 470; i < 480; i++ {
-			core.SendData(req, i)
+			ws = core.DefaultWebSocket()
+			nuri := thisuri
+			ws.Url = &nuri
+			ws.Url.RawQuery = strings.Replace(ws.Url.RawQuery, "{CG}", fmt.Sprintf("%v", i), 1)
+			err := ws.Connect()
+			if err != nil {
+				log.Printf("connect error: %v", err)
+				return
+			}
+			log.Print(ws.Url)
+			ws.WriteMessage(2, nil)
+
+			_, message, err := ws.ReadMessage()
+			if err != nil {
+				log.Fatal("read:", err)
+			}
+			log.Printf("Request: %v  Received %s\n", ws.Url.String(), message)
 		}
+
 	},
 }
