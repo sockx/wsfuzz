@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"wsfuzz/internal/ws"
+	"wsfuzz/internal/core"
 
 	"github.com/ivanpirog/coloredcobra"
 	"github.com/spf13/cobra"
@@ -44,13 +44,13 @@ var testCmd = &cobra.Command{
 	Short: "Run fuzz",
 	Run: func(cmd *cobra.Command, args []string) {
 		// 读文件
-		req := ws.ParseFile(localFile)
+		req := core.ParseFile(localFile)
 		if req == nil {
 			return
 		}
 
 		for i := 470; i < 480; i++ {
-			ws.SendData(req, i)
+			core.SendData(req, i)
 		}
 	},
 }
